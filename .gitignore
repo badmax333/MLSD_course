@@ -22,3 +22,6 @@ venv/
 
 # OS
 .DS_Store
+
+# Data (датасеты не коммитим)
+data/raw/
