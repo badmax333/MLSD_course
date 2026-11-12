@@ -27,31 +27,28 @@
 
 ## EDA (ДЗ 2)
 
-Данных банка пока нет, поэтому EDA выполнен на публичных **прокси-датасетах** с явной пометкой. Основной прокси для метрик выдачи — WANDS (короткие поисковые запросы, разметка пар «запрос–товар» по шкале 0/1/2, реальная выдача). Согласие LLM-судьи с людьми — ESCI LLM-judged. Банковские интенты — BANKING77 и его русская версия, русские финансовые запросы — synthetic-search-queries-ru, контроль вне домена — MASSIVE ru-RU. Формат будущей разметки банка проверен на синтетическом каталоге фич (48 карточек, допущение).
+EDA отвечает на четыре вопроса, от которых зависит агент: что тестируем (покрытие разделов набором запросов), что считать правильной выдачей (шкала разметки), что считать поломкой (порог тревоги и размер набора) и можно ли доверять LLM-судье. Данных банка пока нет: каталог фич написан вручную (допущение), метрики и просадки смотрим на выдаче WANDS, судью — на ESCI LLM-judged.
 
-- Отчёт с графиками и ключевыми выводами: [reports/eda/README.md](reports/eda/README.md).
-- Основной ноутбук: [notebooks/02_eda_search_proxies.ipynb](notebooks/02_eda_search_proxies.ipynb). Первая версия с анализом свойств текста: [notebooks/01_eda_proxy.ipynb](notebooks/01_eda_proxy.ipynb).
+- Ноутбук: [notebooks/eda.ipynb](notebooks/eda.ipynb). Ответы и решения: [reports/eda/README.md](reports/eda/README.md).
 - Датасеты и как их скачать: [data/README.md](data/README.md).
 - Этапы решения по итогам EDA — раздел 2.3 [дизайн-документа](docs/ml_system_design_doc.md).
 
-Как воспроизвести (CPU, около 2 минут на ноутбук 02):
+Как воспроизвести (CPU, около 15 секунд, данные загрузчики скачают сами):
 
 ```bash
 uv sync --group eda
-# MASSIVE скачать вручную в data/raw/ (см. data/README.md), остальное загрузчики скачают сами
-uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_eda_search_proxies.ipynb
-uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda_proxy.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/eda.ipynb
 ```
 
 ## Структура
 
 ```text
 docs/                 # ML System Design Doc
-notebooks/            # EDA-ноутбуки
+notebooks/            # EDA-ноутбук
 reports/eda/          # отчёт EDA и графики
 data/                 # описание датасетов (сырые данные не коммитим)
 data/synthetic/       # синтетический каталог фич банка (допущение)
-src/mlsd_course/eda/  # загрузчики, бейзлайны BM25/TF-IDF, R3/NDCG, детектор просадок, согласие судьи
+src/mlsd_course/eda/  # загрузчики, каталог, бейзлайны BM25/TF-IDF, R3/NDCG, симуляция релизов, согласие судьи
 ```
 
 ## Автор
