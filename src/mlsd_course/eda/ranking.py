@@ -59,3 +59,38 @@ def detect_drops(
     m["delta"] = m[f"{metric}_cur"] - m[f"{metric}_base"]
     m["is_drop"] = m["delta"] <= -threshold
     return m
+
+
+def evaluate_run(run: pd.DataFrame, qrels: pd.DataFrame, k: int = 3) -> pd.DataFrame:
+    """R@k и NDCG@k по запросам для выдачи с внешней разметкой пар.
+
+    run: query_id, position, doc_id. qrels: query_id, doc_id, rel (0/1/2).
+    Неразмеченная позиция считается нерелевантной (rel = 0), её долю возвращаем в ``labeled``.
+    Идеальная выдача для NDCG — все размеченные пары запроса, отсортированные по rel.
+    """
+    top = run[run["position"] <= k].merge(qrels, on=["query_id", "doc_id"], how="left")
+    top = top.sort_values(["query_id", "position"])
+    ideal = qrels.groupby("query_id")["rel"].apply(list).to_dict()
+    out = []
+    for qid, g in top.groupby("query_id", sort=False):
+        rels = g["rel"].fillna(0).tolist()
+        out.append(
+            {
+                "query_id": qid,
+                f"r{k}": r_at_k(rels, k),
+                f"ndcg{k}": ndcg_at_k(rels, k, ideal=ideal.get(qid, [])),
+                "labeled": g["rel"].notna().mean(),
+            }
+        )
+    return pd.DataFrame(out)
+
+
+def bootstrap_ci(
+    values: Sequence[float], n_boot: int = 2000, alpha: float = 0.05, seed: int = 0
+) -> tuple[float, float, float]:
+    """Среднее и перцентильный бутстрап-интервал (ресэмплинг по запросам)."""
+    arr = np.asarray(values, dtype=float)
+    rng = np.random.default_rng(seed)
+    means = arr[rng.integers(0, arr.size, size=(n_boot, arr.size))].mean(axis=1)
+    lo, hi = np.quantile(means, [alpha / 2, 1 - alpha / 2])
+    return float(arr.mean()), float(lo), float(hi)
