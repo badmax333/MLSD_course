@@ -27,13 +27,19 @@
 
 ## EDA (ДЗ 2)
 
-Данных банка пока нет, поэтому EDA сделан на публичных прокси-датасетах BANKING77 и MASSIVE ru-RU, а метрики выдачи и детектор просадок показаны на синтетике. Сводный отчёт с графиками и выводами: [reports/eda/README.md](reports/eda/README.md). Ноутбук: [notebooks/01_eda_proxy.ipynb](notebooks/01_eda_proxy.ipynb). Этапы решения по итогам EDA — в разделе 2.3 [дизайн-документа](docs/ml_system_design_doc.md).
+Данных банка пока нет, поэтому EDA выполнен на публичных **прокси-датасетах** с явной пометкой. Основной прокси для метрик выдачи — WANDS (короткие поисковые запросы, разметка пар «запрос–товар» по шкале 0/1/2, реальная выдача). Согласие LLM-судьи с людьми — ESCI LLM-judged. Банковские интенты — BANKING77 и его русская версия, русские финансовые запросы — synthetic-search-queries-ru, контроль вне домена — MASSIVE ru-RU. Формат будущей разметки банка проверен на синтетическом каталоге фич (48 карточек, допущение).
 
-Как воспроизвести:
+- Отчёт с графиками и ключевыми выводами: [reports/eda/README.md](reports/eda/README.md).
+- Основной ноутбук: [notebooks/02_eda_search_proxies.ipynb](notebooks/02_eda_search_proxies.ipynb). Первая версия с анализом свойств текста: [notebooks/01_eda_proxy.ipynb](notebooks/01_eda_proxy.ipynb).
+- Датасеты и как их скачать: [data/README.md](data/README.md).
+- Этапы решения по итогам EDA — раздел 2.3 [дизайн-документа](docs/ml_system_design_doc.md).
+
+Как воспроизвести (CPU, около 2 минут на ноутбук 02):
 
 ```bash
 uv sync --group eda
-# скачать датасеты в data/raw/ — см. data/README.md
+# MASSIVE скачать вручную в data/raw/ (см. data/README.md), остальное загрузчики скачают сами
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_eda_search_proxies.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda_proxy.ipynb
 ```
 
@@ -43,8 +49,9 @@ uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda_prox
 docs/                 # ML System Design Doc
 notebooks/            # EDA-ноутбуки
 reports/eda/          # отчёт EDA и графики
-data/                 # описание датасетов (сами данные не коммитим)
-src/mlsd_course/eda/  # загрузка данных, текстовая статистика, R3/NDCG, детектор просадок
+data/                 # описание датасетов (сырые данные не коммитим)
+data/synthetic/       # синтетический каталог фич банка (допущение)
+src/mlsd_course/eda/  # загрузчики, бейзлайны BM25/TF-IDF, R3/NDCG, детектор просадок, согласие судьи
 ```
 
 ## Автор
